@@ -9,10 +9,10 @@
 | Vehicle - Gear | 에뮬레이터 시험 안내에 `GEAR_SELECTION` 속성 언급, Virtual Console에서 기어 설정 가능 | 앱 코드 API, 권한 | **미확인**. 합성 |
 | Vehicle - Light·Wiper·Brake·TurnSignal | Vehicle SDK 도메인 목록에 Light, Wiper, Brake, TurnSignal 존재 (v2.3.2 소개) | 각 값을 읽는 메서드, 권한 | **미확인**. 합성 |
 | Vehicle 의존성 | 저장소 `https://nexus-playground.pleos.ai/repository/maven-releases/`, 좌표 예시 `ai.pleos.playground:Vehicle:2.3.1` (Getting Started) | 소개 문서의 v2.3.2와 버전 차이, 실제 빌드 | 의존성 미추가 |
-| TextToSpeech (ON_DEVICE) | ON_DEVICE 모드는 네트워크·앱 등록 없이 사용 (v3.3.1). My Project 안내에는 "준비 중" | 앱 코드 API, 우선순위 정책 | **미확인**. Android 표준 `TextToSpeech` 사용 |
+| TextToSpeech (ON_DEVICE) | ON_DEVICE 모드는 네트워크·앱 등록 없이 사용 (v3.3.1). My Project 안내에는 "준비 중". 에뮬레이터에 음성 엔진 `ai.pleos.playground.caas`가 설치되어 있으나 기본 엔진으로 지정되지 않음 | 앱 코드 API, 우선순위 정책, 엔진 연결 조건 | **미확인**. Android 표준 `TextToSpeech`로 위 엔진을 직접 지정해도 연결 실패 (2026-11-11). 녹음 음성으로 대체 |
 | NaviHelper | 신청 없이 사용 가능. 내비게이션 정보 조회, 경로·주행 상태 이벤트 | 기본 지도 위 사용자 표시 | 이번 범위에서 미사용 |
 | 주행 중 사용 | Distraction Optimization 미선언 앱은 주행 중 사용 불가 | Manifest 선언의 실제 인정 여부 | `distractionOptimized` 메타데이터 선언만 |
-| Pleos Connect Emulator | API 34 이미지, v2.1.0 이상, Cold boot 권장 | - | 개발 PC 미설치. 앱 실행 **미검증** |
+| Pleos Connect Emulator | API 34 이미지, v2.1.0 이상, Cold boot 권장 | 차량 신호를 앱에 주입하는 방법 | 2026-11-11 v2.1.0 이미지(RAM 4GB, Cold boot)에서 debug APK 설치·실행, 합성 시나리오 s01·s02 동작 **확인** |
 
 ## 출처
 

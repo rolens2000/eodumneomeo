@@ -64,17 +64,19 @@ Windows에서는 `gradlew.bat :core:test`. JDK 17이 필요합니다.
 |---|---|
 | FusedLocation | 문서 확인, API 연결 **미확인**. 합성 입력 사용 |
 | Vehicle (Speed·Gear·Light·Wiper·Brake·TurnSignal) | 도메인과 의존성 좌표 확인, 메서드·권한 **미확인**. 합성 입력 사용 |
-| TextToSpeech (ON_DEVICE) | 문서 확인, API **미확인**. Android 표준 TextToSpeech 사용 |
+| TextToSpeech (ON_DEVICE) | 문서 확인, API **미확인**. Android 표준 TextToSpeech로 Pleos 엔진 연결 시도 → 실패, 녹음 음성으로 대체 |
 | NaviHelper | 문서 확인. 이번 범위에서 사용하지 않음 |
-| Pleos Connect Emulator | 개발 PC 미설치. 앱 실행 **미검증** |
+| Pleos Connect Emulator | v2.1.0 이미지에서 APK 설치·실행, s01·s02 시나리오 동작 **확인** (2026-11-11) |
 
 ## 화면 캡처
 
-| 장면 | 이미지 |
-|---|---|
-| 시나리오 선택 | `docs/images/01-scenarios.png` (촬영 예정) |
-| 50m 안내 | `docs/images/02-announce.png` (촬영 예정) |
-| 안내 생략 기록 | `docs/images/03-skip.png` (촬영 예정) |
+Pleos Connect Emulator(v2.1.0 이미지, API 34)에서 debug APK를 실행한 화면입니다. 입력은 모두 합성입니다.
+
+| 시나리오 선택 | s01 50m 안내 | s02 안내 생략 |
+|---|---|---|
+| ![시나리오 선택](docs/images/01-scenarios.png) | ![50m 안내](docs/images/02-announce.png) | ![안내 생략](docs/images/03-skip.png) |
+
+**음성 출력:** 에뮬레이터의 Pleos 음성 엔진(`ai.pleos.playground.caas`)에는 연결되지 않았습니다(앱 등록 또는 SDK 사용 승인이 필요한 것으로 추정). 연결에 실패하면 같은 문장을 미리 녹음한 `app/src/main/assets/voice/announce.wav`를 재생하고 화면에 "녹음된 안내 음성"이라고 표시합니다. 이 녹음은 개발 PC의 Windows 내장 한국어 음성으로 만든 시연용 파일이므로, 저장소 공개 전에 이용 조건을 확인하거나 직접 녹음한 파일로 바꿔야 합니다.
 
 ## 저장소에 넣지 않는 것
 
