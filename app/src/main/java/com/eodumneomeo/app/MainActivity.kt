@@ -3,6 +3,7 @@ package com.eodumneomeo.app
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -47,6 +48,7 @@ class MainActivity : Activity(), SpeechPlayer {
     private lateinit var voice: TextView
     private var ttsEngine: String? = null
     private var ttsReady = false
+    private var recorded: MediaPlayer? = null
 
     private val tick = object : Runnable {
         override fun run() {
@@ -140,11 +142,35 @@ class MainActivity : Activity(), SpeechPlayer {
     private fun turn(t: TurnSignal) = when (t) { TurnSignal.NONE -> "꺼짐"; TurnSignal.LEFT -> "왼쪽"; TurnSignal.RIGHT -> "오른쪽" }
 
     override fun play(key: String, text: String) {
-        val ok = ttsReady && tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, key) == TextToSpeech.SUCCESS
-        voice.text = if (ok) "음성 안내: $text" else "화면 안내(음성 출력 실패): $text"
-        if (!ok) ui.post { queue.onDone(key) }
+        if (ttsReady && tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, key) == TextToSpeech.SUCCESS) {
+            voice.text = "음성 안내: $text"
+        } else if (text == cfg.announceText && playRecorded(key)) {
+            // 음성 엔진에 연결할 수 없을 때만 미리 녹음한 같은 문장을 재생한다
+            voice.text = "녹음된 안내 음성: $text"
+        } else {
+            voice.text = "화면 안내(음성 출력 실패): $text"
+            ui.post { queue.onDone(key) }
+        }
     }
-    override fun stop() { tts.stop() }
 
-    override fun onDestroy() { ui.removeCallbacks(tick); tts.shutdown(); super.onDestroy() }
+    private fun playRecorded(key: String): Boolean = try {
+        recorded?.release()
+        recorded = assets.openFd("voice/announce.wav").use { fd ->
+            MediaPlayer().apply {
+                setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
+                setOnCompletionListener { ui.post { queue.onDone(key) } }
+                prepare(); start()
+            }
+        }
+        true
+    } catch (e: Exception) {
+        false
+    }
+
+    override fun stop() {
+        tts.stop()
+        recorded?.let { if (it.isPlaying) it.stop() }
+    }
+
+    override fun onDestroy() { ui.removeCallbacks(tick); tts.shutdown(); recorded?.release(); super.onDestroy() }
 }
