@@ -1,0 +1,16 @@
+{
+  "notice": "모든 좌표는 시험용 샘플 좌표입니다. 실제 교차로 위치나 실제 키트 설치 지점이 아닙니다. 시범 지역(충남 서산 읍면부)을 가정해 그 인근에 임의의 격자로 배치했습니다.",
+  "region": "충남 서산 읍면부 (시범 지역 가정)",
+  "intersections": [
+    {"id": "SAMPLE-SS-01", "lat": 36.7000, "lon": 126.5000, "approaches": [{"roadId": "S", "bearingDeg": 180}, {"roadId": "W", "bearingDeg": 270}, {"roadId": "E", "bearingDeg": 90}], "signalized": false, "risk": "HIGH", "kitInstalled": false, "source": "SAMPLE_COORDINATE"},
+    {"id": "SAMPLE-SS-02", "lat": 36.7100, "lon": 126.5000, "approaches": [{"roadId": "S", "bearingDeg": 180}, {"roadId": "W", "bearingDeg": 270}, {"roadId": "E", "bearingDeg": 90}], "signalized": false, "risk": "HOTSPOT", "kitInstalled": false, "source": "SAMPLE_COORDINATE"},
+    {"id": "SAMPLE-SS-03", "lat": 36.7200, "lon": 126.5000, "approaches": [{"roadId": "S", "bearingDeg": 180}, {"roadId": "W", "bearingDeg": 270}, {"roadId": "N", "bearingDeg": 0}], "signalized": false, "risk": "MEDIUM", "kitInstalled": false, "source": "SAMPLE_COORDINATE"},
+    {"id": "SAMPLE-SS-04", "lat": 36.7300, "lon": 126.5000, "approaches": [{"roadId": "S", "bearingDeg": 180}, {"roadId": "E", "bearingDeg": 90}, {"roadId": "N", "bearingDeg": 0}], "signalized": false, "risk": "MEDIUM", "kitInstalled": false, "source": "SAMPLE_COORDINATE"},
+    {"id": "SAMPLE-SS-05", "lat": 36.7400, "lon": 126.5000, "approaches": [{"roadId": "S", "bearingDeg": 180}, {"roadId": "W", "bearingDeg": 270}, {"roadId": "N", "bearingDeg": 0}], "signalized": false, "risk": "HIGH", "kitInstalled": false, "source": "SAMPLE_COORDINATE"},
+    {"id": "SAMPLE-SS-06", "lat": 36.7409, "lon": 126.5000, "approaches": [{"roadId": "S", "bearingDeg": 180}, {"roadId": "E", "bearingDeg": 90}, {"roadId": "N", "bearingDeg": 0}], "signalized": false, "risk": "LOW", "kitInstalled": false, "source": "SAMPLE_COORDINATE"},
+    {"id": "SAMPLE-SS-07", "lat": 36.7500, "lon": 126.5000, "approaches": [{"roadId": "S", "bearingDeg": 180}, {"roadId": "W", "bearingDeg": 270}, {"roadId": "E", "bearingDeg": 90}, {"roadId": "N", "bearingDeg": 0}], "signalized": true, "risk": "LOW", "kitInstalled": false, "source": "SAMPLE_COORDINATE"},
+    {"id": "SAMPLE-SS-08", "lat": 36.7000, "lon": 126.5200, "approaches": [{"roadId": "S", "bearingDeg": 180}, {"roadId": "W", "bearingDeg": 270}, {"roadId": "E", "bearingDeg": 90}], "signalized": false, "risk": "HIGH", "kitInstalled": true, "source": "SAMPLE_COORDINATE"},
+    {"id": "SAMPLE-SS-09", "lat": 36.7100, "lon": 126.5200, "approaches": [{"roadId": "W", "bearingDeg": 270}, {"roadId": "E", "bearingDeg": 90}, {"roadId": "N", "bearingDeg": 0}], "signalized": false, "risk": "LOW", "kitInstalled": false, "source": "SAMPLE_COORDINATE"},
+    {"id": "SAMPLE-SS-10", "lat": 36.7200, "lon": 126.5200, "approaches": [{"roadId": "S", "bearingDeg": 180}, {"roadId": "W", "bearingDeg": 270}, {"roadId": "E", "bearingDeg": 90}], "signalized": false, "risk": "HOTSPOT", "kitInstalled": false, "source": "SAMPLE_COORDINATE"}
+  ]
+}

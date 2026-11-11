@@ -1,0 +1,4 @@
+# s03 사고다발: SAMPLE-SS-02, 주간이어도 안내 (합성 입력)
+t_ms,lat,lon,speed_kph,gear,headlight,wiper,brake,turn
+0,36.7089208,126.5000,30,D,0,0,0,NONE
+18000,36.7102698,126.5000,30,D,0,0,0,NONE

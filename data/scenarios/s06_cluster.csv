@@ -1,0 +1,4 @@
+# s06 묶음: SAMPLE-SS-05와 100m 북쪽 SAMPLE-SS-06을 한 번만 안내 (합성 입력)
+t_ms,lat,lon,speed_kph,gear,headlight,wiper,brake,turn
+0,36.7389208,126.5000,30,D,1,0,0,NONE
+30000,36.7411698,126.5000,30,D,1,0,0,NONE
