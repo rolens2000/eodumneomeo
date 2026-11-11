@@ -1,6 +1,7 @@
 package com.eodumneomeo.app
 
 import android.app.Activity
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
@@ -43,6 +44,9 @@ class MainActivity : Activity(), SpeechPlayer {
     private lateinit var status: TextView
     private lateinit var signals: TextView
     private lateinit var log: TextView
+    private lateinit var voice: TextView
+    private var ttsEngine: String? = null
+    private var ttsReady = false
 
     private val tick = object : Runnable {
         override fun run() {
@@ -60,14 +64,22 @@ class MainActivity : Activity(), SpeechPlayer {
         super.onCreate(savedInstanceState)
         db = IntersectionDb.parse(asset("intersections.sample.json"))
         cfg = GuidanceConfig.fromProperties(asset("guidance.properties"))
-        tts = TextToSpeech(this) { if (it == TextToSpeech.SUCCESS) tts.language = Locale.KOREAN }
+        setContentView(buildLayout())
+        // 기본 음성 엔진이 지정되지 않은 기기(Pleos 에뮬레이터 등)에서도 연결되도록 설치된 엔진을 직접 고른다
+        val engines = packageManager.queryIntentServices(Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE), 0)
+            .map { it.serviceInfo.packageName }.distinct()
+        ttsEngine = engines.firstOrNull { it.startsWith("ai.pleos") } ?: engines.firstOrNull()
+        tts = TextToSpeech(this, { status ->
+            ttsReady = status == TextToSpeech.SUCCESS &&
+                tts.setLanguage(Locale.KOREAN) >= TextToSpeech.LANG_AVAILABLE
+            ui.post { voice.text = if (ttsReady) "음성 엔진 연결됨 (${ttsEngine ?: "기본"})" else "음성 엔진 연결 실패 (${ttsEngine ?: "없음"}) · 화면으로만 안내" }
+        }, ttsEngine)
         tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(id: String) {}
             override fun onDone(id: String) { ui.post { queue.onDone(id) } }
             @Deprecated("Deprecated in Java")
             override fun onError(id: String) { ui.post { queue.onDone(id) } }
         })
-        setContentView(buildLayout())
     }
 
     private fun asset(name: String) = assets.open(name).bufferedReader(Charsets.UTF_8).use { it.readText() }
@@ -87,7 +99,8 @@ class MainActivity : Activity(), SpeechPlayer {
         status = text(40f).apply { text = "시나리오를 선택하세요" }
         signals = text(20f, Color.rgb(169, 180, 200))
         log = text(20f)
-        addView(status); addView(signals); addView(log)
+        voice = text(22f, Color.rgb(255, 184, 28)).apply { text = "음성 엔진 연결 중" }
+        addView(status); addView(signals); addView(voice); addView(log)
         val row = LinearLayout(this@MainActivity)
         assets.list("scenarios").orEmpty().sorted().forEach { f ->
             row.addView(Button(this@MainActivity).apply { text = f.removeSuffix(".csv"); setOnClickListener { start(f) } })
@@ -126,7 +139,11 @@ class MainActivity : Activity(), SpeechPlayer {
     private fun onOff(b: Boolean) = if (b) "켜짐" else "꺼짐"
     private fun turn(t: TurnSignal) = when (t) { TurnSignal.NONE -> "꺼짐"; TurnSignal.LEFT -> "왼쪽"; TurnSignal.RIGHT -> "오른쪽" }
 
-    override fun play(key: String, text: String) { tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, key) }
+    override fun play(key: String, text: String) {
+        val ok = ttsReady && tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, key) == TextToSpeech.SUCCESS
+        voice.text = if (ok) "음성 안내: $text" else "화면 안내(음성 출력 실패): $text"
+        if (!ok) ui.post { queue.onDone(key) }
+    }
     override fun stop() { tts.stop() }
 
     override fun onDestroy() { ui.removeCallbacks(tick); tts.shutdown(); super.onDestroy() }
