@@ -31,6 +31,17 @@ docs/   안내 규칙, 이벤트 형식, SDK 확인 상태, 시연 영상 체크
 3. Pleos Connect Emulator v2.1.0 이상을 설치합니다. 설치 절차: [에뮬레이터 설정](https://document.pleos.ai/en/docs/connect/guide/getting-started/application-development/setup-connect-sdk-emulator)
 4. `app`을 에뮬레이터에서 실행합니다.
 
+## 심사 환경
+
+| 항목 | 값 |
+|---|---|
+| 에뮬레이터 | Pleos Connect Emulator v2.1.0 (시스템 이미지 `pleos_car_emulator`, Android API 34, x86_64) |
+| 기기 프로필 | `Pleos_Connect_v2_0` (Pleos Connect v2.1.0) |
+| 화면 규격 | 2560 × 1440, 160 dpi (mdpi), 가로 |
+| 가상 기기 설정 | RAM 4GB, Cold boot |
+| 실차 | 필요 없음. 모든 입력은 앱에 내장된 합성 시나리오 |
+| 비밀 값 | 없음. 서버 연동 없이 단말에서 동작 |
+
 ## 시나리오 재현
 
 앱 하단의 시나리오 버튼을 누르면 `data/scenarios/`의 CSV를 시간에 따라 재생합니다. 화면 맨 위에는 "합성 입력" 표시가 항상 보입니다.
