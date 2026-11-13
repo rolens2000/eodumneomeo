@@ -7,7 +7,11 @@ pluginManagement {
     }
 }
 dependencyResolutionManagement {
-    repositories { google(); mavenCentral() }
+    repositories {
+        google(); mavenCentral()
+        // Pleos Connect SDK 저장소 (공식 문서 기준)
+        maven("https://nexus-playground.pleos.ai/repository/maven-releases/")
+    }
 }
 
 rootProject.name = "eodumneomeo"

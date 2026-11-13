@@ -24,5 +24,6 @@ android {
 
 dependencies {
     implementation(project(":core"))
-    // Pleos SDK(예: ai.pleos.playground:Vehicle)는 API 확인 후 연결한다. docs/sdk-status.md 참고
+    // Pleos TextToSpeech SDK (ON_DEVICE 음성 안내)
+    implementation("ai.pleos.playground:TextToSpeech:3.3.1")
 }

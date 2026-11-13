@@ -2,7 +2,7 @@
 
 어둠과 구조물에 가려 차량 센서와 운전자의 눈이 닿지 않는 비신호 교차로를, 차량 화면과 음성으로 미리 알려 주는 Pleos Connect 앱입니다.
 
-> **고지: 실차·실센서 미검증.** 이 저장소의 모든 차량 신호, GPS 경로, 반사경 이벤트는 합성 입력입니다. 교차로 좌표는 시험용 샘플이며 실제 교차로나 설치 지점이 아닙니다. 실제 차량과 실제 센서로는 시험하지 않았습니다.
+> **고지: 실차·실센서 미검증.** 이 저장소의 모든 차량 신호, GPS 경로, 반사경 이벤트는 합성 입력입니다. 음성 출력만 Pleos TextToSpeech SDK를 실제로 호출합니다. 교차로 좌표는 시험용 샘플이며 실제 교차로나 설치 지점이 아닙니다. 실제 차량과 실제 센서로는 시험하지 않았습니다.
 
 ## 구조
 
@@ -17,7 +17,7 @@ core/   순수 Kotlin 판단 로직. Android 의존 없음, JVM에서 단위 테
   SpeechQueue      한 번에 한 문장, 지나친 안내 취소
   SmartMirror      2단계 이벤트 형식과 좌우 판정 (인터페이스)
   Data             샘플 DB·시나리오 읽기
-app/    Android 앱. 입력 연결, 화면, 음성만 담당
+app/    Android 앱. 입력 연결, 화면, 음성(Pleos TextToSpeech SDK)만 담당
 data/   샘플 교차로 DB, 안내 설정값, 합성 시나리오 (core 테스트와 앱이 같은 파일 사용)
 docs/   안내 규칙, 이벤트 형식, SDK 확인 상태, 시연 영상 체크리스트
 ```
@@ -75,7 +75,7 @@ Windows에서는 `gradlew.bat :core:test`. JDK 17이 필요합니다.
 |---|---|
 | FusedLocation | 문서 확인, API 연결 **미확인**. 합성 입력 사용 |
 | Vehicle (Speed·Gear·Light·Wiper·Brake·TurnSignal) | 도메인과 의존성 좌표 확인, 메서드·권한 **미확인**. 합성 입력 사용 |
-| TextToSpeech (ON_DEVICE) | 문서 확인, API **미확인**. Android 표준 TextToSpeech로 Pleos 엔진 연결 시도 → 실패, 녹음 음성으로 대체 |
+| TextToSpeech (ON_DEVICE) | **연결·동작 확인** (SDK 3.3.1, 에뮬레이터, 2026-11-13) |
 | NaviHelper | 문서 확인. 이번 범위에서 사용하지 않음 |
 | Pleos Connect Emulator | v2.1.0 이미지에서 APK 설치·실행, s01·s02 시나리오 동작 **확인** (2026-11-11) |
 
@@ -87,7 +87,7 @@ Pleos Connect Emulator(v2.1.0 이미지, API 34)에서 debug APK를 실행한 �
 |---|---|---|
 | ![시나리오 선택](docs/images/01-scenarios.png) | ![50m 안내](docs/images/02-announce.png) | ![안내 생략](docs/images/03-skip.png) |
 
-**음성 출력:** 에뮬레이터의 Pleos 음성 엔진(`ai.pleos.playground.caas`)에는 연결되지 않았습니다(앱 등록 또는 SDK 사용 승인이 필요한 것으로 추정). 연결에 실패하면 같은 문장을 미리 녹음한 `app/src/main/assets/voice/announce.wav`를 재생하고 화면에 "녹음된 안내 음성"이라고 표시합니다. 이 녹음은 개발 PC의 Windows 내장 한국어 음성으로 만든 시연용 파일이므로, 저장소 공개 전에 이용 조건을 확인하거나 직접 녹음한 파일로 바꿔야 합니다.
+**음성 출력:** Pleos TextToSpeech SDK 3.3.1을 ON_DEVICE 모드로 호출합니다. 2026-11-13 에뮬레이터에서 s01 시나리오의 안내 문장이 SDK로 재생되고 완료되는 것을 확인했습니다. SDK 초기화나 재생에 실패하면 화면 문구로만 안내합니다.
 
 ## 저장소에 넣지 않는 것
 

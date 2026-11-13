@@ -1,20 +1,21 @@
 package com.eodumneomeo.app
 
 import android.app.Activity
-import android.content.Intent
 import android.graphics.Color
-import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
-import android.speech.tts.TextToSpeech
-import android.speech.tts.UtteranceProgressListener
 import android.view.Gravity
 import android.widget.Button
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
+import ai.pleos.playground.tts.TextToSpeech
+import ai.pleos.playground.tts.constant.ErrorType
+import ai.pleos.playground.tts.constant.Mode
+import ai.pleos.playground.tts.listener.EventListener
+import ai.pleos.playground.tts.listener.OnInitializeListener
 import com.eodumneomeo.core.EngineOutput
 import com.eodumneomeo.core.GuidanceConfig
 import com.eodumneomeo.core.GuidanceEngine
@@ -26,11 +27,11 @@ import com.eodumneomeo.core.SpeechPlayer
 import com.eodumneomeo.core.SpeechQueue
 import com.eodumneomeo.core.TurnSignal
 import com.eodumneomeo.core.VehicleState
-import java.util.Locale
 
 /**
  * 시나리오 파일의 합성 입력으로 1단계 안내를 재현하는 화면.
- * 실제 Pleos SDK 입력은 API 확인 후 core의 LocationSource·VehicleSignalSource 구현으로 연결한다.
+ * 음성은 Pleos TextToSpeech SDK(ON_DEVICE)로 출력하고, 초기화나 재생에 실패하면 화면으로만 안내한다.
+ * 위치·차량 신호는 아직 합성 입력이며 core의 LocationSource·VehicleSignalSource 구현으로 교체한다.
  */
 class MainActivity : Activity(), SpeechPlayer {
     private val ui = Handler(Looper.getMainLooper())
@@ -46,9 +47,24 @@ class MainActivity : Activity(), SpeechPlayer {
     private lateinit var signals: TextView
     private lateinit var log: TextView
     private lateinit var voice: TextView
-    private var ttsEngine: String? = null
     private var ttsReady = false
-    private var recorded: MediaPlayer? = null
+    private var speakingKey: String? = null
+
+    private val ttsListener = object : EventListener {
+        override fun onReady() = Unit
+        override fun onStart() = Unit
+        override fun onUpdatedRms(rms: Double) = Unit
+        override fun onDone() { finishSpeech() }
+        override fun onStop() = Unit
+        override fun onError(errorType: ErrorType) {
+            ui.post { voice.text = "Pleos 음성 오류($errorType)" }
+            finishSpeech()
+        }
+    }
+
+    private fun finishSpeech() {
+        ui.post { speakingKey?.let { k -> speakingKey = null; queue.onDone(k) } }
+    }
 
     private val tick = object : Runnable {
         override fun run() {
@@ -67,21 +83,29 @@ class MainActivity : Activity(), SpeechPlayer {
         db = IntersectionDb.parse(asset("intersections.sample.json"))
         cfg = GuidanceConfig.fromProperties(asset("guidance.properties"))
         setContentView(buildLayout())
-        // 기본 음성 엔진이 지정되지 않은 기기(Pleos 에뮬레이터 등)에서도 연결되도록 설치된 엔진을 직접 고른다
-        val engines = packageManager.queryIntentServices(Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE), 0)
-            .map { it.serviceInfo.packageName }.distinct()
-        ttsEngine = engines.firstOrNull { it.startsWith("ai.pleos") } ?: engines.firstOrNull()
-        tts = TextToSpeech(this, { status ->
-            ttsReady = status == TextToSpeech.SUCCESS &&
-                tts.setLanguage(Locale.KOREAN) >= TextToSpeech.LANG_AVAILABLE
-            ui.post { voice.text = if (ttsReady) "음성 엔진 연결됨 (${ttsEngine ?: "기본"})" else "음성 엔진 연결 실패 (${ttsEngine ?: "없음"}) · 화면으로만 안내" }
-        }, ttsEngine)
-        tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(id: String) {}
-            override fun onDone(id: String) { ui.post { queue.onDone(id) } }
-            @Deprecated("Deprecated in Java")
-            override fun onError(id: String) { ui.post { queue.onDone(id) } }
-        })
+        // Pleos TextToSpeech SDK. ON_DEVICE 모드는 네트워크와 앱 등록 없이 동작한다.
+        // SDK는 initialize() 다음에 리스너를 등록해야 한다. 실패하면 화면으로만 안내한다.
+        try {
+            tts = TextToSpeech(applicationContext, Mode.ON_DEVICE)
+            tts.initialize(object : OnInitializeListener {
+                override fun onSuccess() {
+                    ui.post {
+                        try {
+                            tts.addEventListener(ttsListener)
+                            ttsReady = true
+                            voice.text = "Pleos TextToSpeech SDK 연결됨 (ON_DEVICE)"
+                        } catch (e: Exception) {
+                            voice.text = "Pleos TextToSpeech SDK 리스너 등록 실패 · 화면으로만 안내"
+                        }
+                    }
+                }
+                override fun onFailure(errorType: ErrorType) {
+                    ui.post { voice.text = "Pleos TextToSpeech SDK 초기화 실패($errorType) · 화면으로만 안내" }
+                }
+            })
+        } catch (e: Exception) {
+            voice.text = "Pleos TextToSpeech SDK 사용 불가 · 화면으로만 안내"
+        }
     }
 
     private fun asset(name: String) = assets.open(name).bufferedReader(Charsets.UTF_8).use { it.readText() }
@@ -142,35 +166,19 @@ class MainActivity : Activity(), SpeechPlayer {
     private fun turn(t: TurnSignal) = when (t) { TurnSignal.NONE -> "꺼짐"; TurnSignal.LEFT -> "왼쪽"; TurnSignal.RIGHT -> "오른쪽" }
 
     override fun play(key: String, text: String) {
-        if (ttsReady && tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, key) == TextToSpeech.SUCCESS) {
-            voice.text = "음성 안내: $text"
-        } else if (text == cfg.announceText && playRecorded(key)) {
-            // 음성 엔진에 연결할 수 없을 때만 미리 녹음한 같은 문장을 재생한다
-            voice.text = "녹음된 안내 음성: $text"
+        val spoken = ttsReady && try { tts.speak(text); true } catch (e: Exception) { false }
+        if (spoken) {
+            speakingKey = key
+            voice.text = "Pleos TTS 음성 안내: $text"
         } else {
             voice.text = "화면 안내(음성 출력 실패): $text"
             ui.post { queue.onDone(key) }
         }
     }
 
-    private fun playRecorded(key: String): Boolean = try {
-        recorded?.release()
-        recorded = assets.openFd("voice/announce.wav").use { fd ->
-            MediaPlayer().apply {
-                setDataSource(fd.fileDescriptor, fd.startOffset, fd.length)
-                setOnCompletionListener { ui.post { queue.onDone(key) } }
-                prepare(); start()
-            }
-        }
-        true
-    } catch (e: Exception) {
-        false
-    }
-
     override fun stop() {
-        tts.stop()
-        recorded?.let { if (it.isPlaying) it.stop() }
+        if (speakingKey != null) { speakingKey = null; try { tts.stop() } catch (e: Exception) {} }
     }
 
-    override fun onDestroy() { ui.removeCallbacks(tick); tts.shutdown(); recorded?.release(); super.onDestroy() }
+    override fun onDestroy() { ui.removeCallbacks(tick); try { if (ttsReady) tts.removeEventListener(ttsListener); tts.release() } catch (e: Exception) {}; super.onDestroy() }
 }

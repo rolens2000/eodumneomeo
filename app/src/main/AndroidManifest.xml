@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-feature android:name="android.hardware.type.automotive" android:required="false" />
-    <queries>
-        <intent><action android:name="android.intent.action.TTS_SERVICE" /></intent>
-    </queries>
+    <uses-permission android:name="pleos.car.permission.TTS_SERVICE" />
     <application android:label="어둠너머" android:allowBackup="false">
         <activity
             android:name=".MainActivity"
